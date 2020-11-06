@@ -68,6 +68,11 @@ interface Server {
     fun getUser(accountId: AccountId): User?
 
     /**
+     * @return all the Users registered
+     */
+    fun allUsers(): Set<User>
+
+    /**
      * Load the List of friends for the user with the given [AccountId]
      * @throws IllegalArgumentException if there is no User associated with the given [AccountId]
      */

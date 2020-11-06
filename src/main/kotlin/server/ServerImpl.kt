@@ -95,6 +95,9 @@ class ServerImpl : Server {
     override fun getUser(accountId: AccountId): User? =
         emails.values.find { it.accountId == accountId }
 
+    override fun allUsers(): Set<User> =
+        emails.values.toSet()
+
     override fun getFriendList(accountId: AccountId): List<User> {
         checkUserExists(accountId)
         val allIdPairs = friends.filter { it.first == accountId || it.second == accountId }
