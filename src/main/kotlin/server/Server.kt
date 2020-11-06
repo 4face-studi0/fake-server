@@ -45,11 +45,28 @@ interface Server {
 
     /**
      * Add a Friend to your friends list
+     * @param other the [AccountId] of the friend you with to add
+     * @throws IllegalArgumentException if there is no User associated with the given [AccountId]
+     * @throws IllegalStateException if no user is logged in
+     */
+    fun addFriend(other: AccountId)
+
+    /**
+     * Add a Friend to your friends list
      * @param me your personal [AccountId]
      * @param other the [AccountId] of the friend you with to add
      * @throws IllegalArgumentException if there is no User associated with the given [AccountId]
      */
+    @Deprecated("User with logged in user", ReplaceWith("addFriend(other)"))
     fun addFriend(me: AccountId, other: AccountId)
+
+    /**
+     * Remove a Friend to your friends list
+     * @param other the [AccountId] of the friend you with to remove
+     * @throws IllegalArgumentException if there is no User associated with the given [AccountId]
+     * @throws IllegalStateException if no user is logged in
+     */
+    fun removeFriend(other: AccountId)
 
     /**
      * Remove a Friend to your friends list
@@ -57,6 +74,7 @@ interface Server {
      * @param other the [AccountId] of the friend you with to remove
      * @throws IllegalArgumentException if there is no User associated with the given [AccountId]
      */
+    @Deprecated("User with logged in user", ReplaceWith("removeFriend(other)"))
     fun removeFriend(me: AccountId, other: AccountId)
 
     /**
@@ -75,7 +93,15 @@ interface Server {
     /**
      * Load the List of friends for the user with the given [AccountId]
      * @throws IllegalArgumentException if there is no User associated with the given [AccountId]
+     * @throws IllegalArgumentException if there is no User associated with the given [AccountId]
      */
+    fun getFriendList(): List<User>
+
+    /**
+     * Load the List of friends for the user with the given [AccountId]
+     * @throws IllegalArgumentException if there is no User associated with the given [AccountId]
+     */
+    @Deprecated("User with logged in user", ReplaceWith("getFriendList()"))
     fun getFriendList(accountId: AccountId): List<User>
 }
 

@@ -7,7 +7,7 @@ import server.*
 
 class ServerImplTest {
 
-    private val server = ServerImpl()
+    private val server: Server = ServerImpl()
 
     @Test
     fun `register works successfully if all the parameters are valid`() {
@@ -118,10 +118,10 @@ class ServerImplTest {
     @Test
     fun `verify friend can be added correctly`() {
         val davideId = registerDavide()
-        val marchId = registerMarch()
+        registerMarch()
 
-        server.addFriend(davideId, marchId)
-        assert that server.getFriendList(davideId) equals listOf(server.getUser(marchId))
+        server.addFriend(davideId)
+        assert that server.getFriendList() equals listOf(server.getUser(davideId))
     }
 
     @Test
@@ -129,42 +129,47 @@ class ServerImplTest {
         val davideId = registerDavide()
         val marchId = registerMarch()
 
-        server.addFriend(davideId, marchId)
-        assert that server.getFriendList(davideId) equals listOf(server.getUser(marchId))
-        assert that server.getFriendList(marchId) equals listOf(server.getUser(davideId))
+        server.addFriend(davideId)
+        assert that server.getFriendList() equals listOf(server.getUser(davideId))
+        loginDavide()
+        assert that server.getFriendList() equals listOf(server.getUser(marchId))
     }
 
     @Test
     fun `verify friend can be removed correctly`() {
         val davideId = registerDavide()
-        val marchId = registerMarch()
+        registerMarch()
 
-        server.addFriend(davideId, marchId)
-        server.removeFriend(davideId, marchId)
-        assert that server.getFriendList(davideId) equals emptyList<User>()
+        server.addFriend(davideId)
+        server.removeFriend(davideId)
+        assert that server.getFriendList() equals emptyList()
     }
 
     @Test
     fun `verify friend is removed for both the users`() {
         val davideId = registerDavide()
-        val marchId = registerMarch()
+        registerMarch()
 
-        server.addFriend(davideId, marchId)
-        server.removeFriend(davideId, marchId)
-        assert that server.getFriendList(marchId) equals emptyList<User>()
+        server.addFriend(davideId)
+        server.removeFriend(davideId)
+        assert that server.getFriendList() equals emptyList()
+        loginMarch()
+        assert that server.getFriendList() equals emptyList()
     }
 
     @Test
     fun `state can be saved and loaded`() {
         val davideId = registerDavide()
         val marchId = registerMarch()
-        server.addFriend(davideId, marchId)
+        server.addFriend(davideId)
 
         server.save()
-        val newServer = ServerImpl()
+        val newServer: Server = ServerImpl()
         newServer.load()
 
-        assert that newServer.getFriendList(davideId) equals listOf(newServer.getUser(marchId))
+        assert that newServer.getFriendList() equals listOf(newServer.getUser(davideId))
+        loginDavide()
+        assert that server.getFriendList() equals listOf(server.getUser(marchId))
     }
 
     private fun registerDavide() = server.register(
@@ -179,8 +184,18 @@ class ServerImplTest {
         "March",
         "Queen",
         "marchq2292@gmail.com",
-        "abc123",
+        "def456",
         Birthday(22, 3, 1997)
+    )
+
+    private fun loginDavide() = server.login(
+        "fardavide@gmail.com",
+        "abc123",
+    )
+
+    private fun loginMarch() = server.login(
+        "marchq2292@gmail.com",
+        "def456",
     )
 
 }

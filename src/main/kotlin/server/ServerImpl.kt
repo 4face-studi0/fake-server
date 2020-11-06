@@ -11,6 +11,7 @@ class ServerImpl : Server {
     private val emails = mutableMapOf<String, User>()
     private val passwords = mutableMapOf<String, User>()
     private val friends = mutableSetOf<Pair<AccountId, AccountId>>()
+    private var loggedId: AccountId? = null
 
     override fun save() {
         ServerFile.writeText("""
@@ -18,17 +19,25 @@ class ServerImpl : Server {
             ${Json.encodeToString(emails)}
             ${Json.encodeToString(passwords)}
             ${Json.encodeToString(friends)}
+            ${Json.encodeToString(loggedId)}
         """.trimIndent())
     }
 
     override fun load() {
         if (ServerFile.exists().not())
             return
-        val (savedIdsString, savedEmailsString, savedPasswordsString, savedFriendsString) = ServerFile.readLines()
+        val (
+            savedIdsString,
+            savedEmailsString,
+            savedPasswordsString,
+            savedFriendsString,
+            savedLoggedInString
+        ) = ServerFile.readLines()
         val savedIds: Set<AccountId> = Json.decodeFromString(savedIdsString)
         val savedEmails: Map<String, User> = Json.decodeFromString(savedEmailsString)
         val savedPasswords: Map<String, User> = Json.decodeFromString(savedPasswordsString)
         val savedFriends: Set<Pair<AccountId, AccountId>> = Json.decodeFromString(savedFriendsString)
+        val savedLoggedIn: AccountId? = Json.decodeFromString(savedLoggedInString)
 
         ids.clear()
         ids += savedIds
@@ -38,6 +47,7 @@ class ServerImpl : Server {
         passwords += savedPasswords
         friends.clear()
         friends += savedFriends
+        loggedId = savedLoggedIn
     }
 
     override fun register(
@@ -71,13 +81,22 @@ class ServerImpl : Server {
         emails[email] = user
         passwords[password] = user
 
+        loggedId = accountId
         return accountId
     }
 
     override fun login(email: String, password: String): AccountId {
         checkPasswordMatchesEmail(email, password)
         val user = checkNotNull(emails[email]) { "No user found for given email address" }
+        loggedId = user.accountId
         return user.accountId
+    }
+
+    override fun addFriend(other: AccountId) {
+        val me = requireNotNull(loggedId) { "You're not logged in" }
+        checkUserExists(other)
+        if (other to me !in friends)
+            friends += me to other
     }
 
     override fun addFriend(me: AccountId, other: AccountId) {
@@ -86,6 +105,12 @@ class ServerImpl : Server {
         if (other to me !in friends)
             friends += me to other
     }
+
+    override fun removeFriend(other: AccountId) {
+        val me = requireNotNull(loggedId) { "You're not logged in" }
+        checkUserExists(other)
+        friends -= me to other
+        friends -= other to me    }
 
     override fun removeFriend(me: AccountId, other: AccountId) {
         checkUserExists(me)
@@ -99,6 +124,13 @@ class ServerImpl : Server {
 
     override fun allUsers(): Set<User> =
         emails.values.toSet()
+
+    override fun getFriendList(): List<User> {
+        val me = requireNotNull(loggedId) { "You're not logged in" }
+        val allIdPairs = friends.filter { it.first == me || it.second == me }
+        val allIdsList = allIdPairs.flatMap { listOf(it.first, it.second) }.toSet()
+        return (allIdsList - me).mapNotNull(::getUser)
+    }
 
     override fun getFriendList(accountId: AccountId): List<User> {
         checkUserExists(accountId)
