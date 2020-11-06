@@ -1,12 +1,9 @@
 package client
 
-import server.Birthday
-import server.ServerImpl
 import kotlin.test.Test
 import kotlin.test.*
 import assert4k.*
-import server.AccountId
-import server.User
+import server.*
 
 class ServerImplTest {
 
@@ -155,6 +152,19 @@ class ServerImplTest {
         server.addFriend(davideId, marchId)
         server.removeFriend(davideId, marchId)
         assert that server.getFriendList(marchId) equals emptyList<User>()
+    }
+
+    @Test
+    fun `state can be saved and loaded`() {
+        val davideId = registerDavide()
+        val marchId = registerMarch()
+        server.addFriend(davideId, marchId)
+
+        server.save()
+        val newServer = ServerImpl()
+        newServer.load()
+
+        assert that newServer.getFriendList(davideId) equals listOf(newServer.getUser(marchId))
     }
 
     private fun registerDavide() = server.register(

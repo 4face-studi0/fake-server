@@ -1,6 +1,21 @@
 package server
 
+import kotlinx.serialization.Serializable
+
 interface Server {
+
+    /**
+     * Save the current state of the server, so it can be loaded the next time we
+     * launch the application
+     * @see load
+     */
+    fun save()
+
+    /**
+     * Load the previous saved state of the server
+     * @see save
+     */
+    fun load()
 
     /**
      * Create a new account with the requested parameters.
@@ -59,8 +74,10 @@ interface Server {
     fun getFriendList(accountId: AccountId): List<User>
 }
 
+@Serializable
 data class AccountId(val number: Int)
 
+@Serializable
 data class User(
     val accountId: AccountId,
     val name: String,
@@ -68,6 +85,7 @@ data class User(
     val birthday: Birthday
 )
 
+@Serializable
 data class Birthday(
     val day: Int,
     val month: Int,

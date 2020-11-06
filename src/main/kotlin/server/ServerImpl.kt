@@ -1,11 +1,42 @@
 package server
 
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import java.io.File
+
 class ServerImpl : Server {
 
     private val ids = mutableSetOf<AccountId>()
     private val emails = mutableMapOf<String, User>()
     private val passwords = mutableMapOf<String, User>()
     private val friends = mutableSetOf<Pair<AccountId, AccountId>>()
+
+    override fun save() {
+        ServerFile.writeText("""
+            ${Json.encodeToString(ids)}
+            ${Json.encodeToString(emails)}
+            ${Json.encodeToString(passwords)}
+            ${Json.encodeToString(friends)}
+        """.trimIndent())
+    }
+
+    override fun load() {
+        val (savedIdsString, savedEmailsString, savedPasswordsString, savedFriendsString) = ServerFile.readLines()
+        val savedIds: Set<AccountId> = Json.decodeFromString(savedIdsString)
+        val savedEmails: Map<String, User> = Json.decodeFromString(savedEmailsString)
+        val savedPasswords: Map<String, User> = Json.decodeFromString(savedPasswordsString)
+        val savedFriends: Set<Pair<AccountId, AccountId>> = Json.decodeFromString(savedFriendsString)
+
+        ids.clear()
+        ids += savedIds
+        emails.clear()
+        emails += savedEmails
+        passwords.clear()
+        passwords += savedPasswords
+        friends.clear()
+        friends += savedFriends
+    }
 
     override fun register(
         name: String,
@@ -104,5 +135,9 @@ class ServerImpl : Server {
 
     private fun checkUserExists(accountId: AccountId) {
         requireNotNull(getUser(accountId)) { "No user found with the given account Id" }
+    }
+
+    private companion object {
+        val ServerFile = File("server")
     }
 }
