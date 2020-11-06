@@ -3,16 +3,15 @@ package client
 import server.AccountId
 import server.Birthday
 import server.Server
-import server.User
 
 fun main() {
     val server = Server()
     server.load()
 
-    menu(server, null)
+    menu(server)
 }
 
-fun menu(server: Server, myId: AccountId?) {
+fun menu(server: Server) {
     server.save()
 
     println("""
@@ -29,10 +28,10 @@ fun menu(server: Server, myId: AccountId?) {
     when (selection) {
         "register" -> startRegistration(server)
         "login" -> starLogin(server)
-        "add" -> startAddingFriend(server, myId)
-        "remove" -> startRemoveFriend(server, myId)
-        "friends" -> seeFriendList(server, myId)
-        "users" -> seeAllUsers(server, myId)
+        "add" -> startAddingFriend(server)
+        "remove" -> startRemoveFriend(server)
+        "friends" -> seeFriendList(server)
+        "users" -> seeAllUsers(server)
         else -> println("Unknown command")
     }
 }
@@ -55,7 +54,7 @@ fun startRegistration(server: Server) {
 
     val accountId = server.register(name, surname, email, password, birthday)
 
-    menu(server, accountId)
+    menu(server)
 }
 
 fun starLogin(server: Server) {
@@ -67,52 +66,46 @@ fun starLogin(server: Server) {
     val accountId = server.login(email, password)
     println("logged in as ${server.getUser(accountId)!!.name}")
 
-    menu(server, accountId)
+    menu(server)
 }
 
-fun startAddingFriend(server: Server, myId: AccountId?) {
-    checkNotNull(myId) { "You're not logged in" }
-
+fun startAddingFriend(server: Server) {
     println("Enter Your Friend Name")
     val name = readLine()!!
     val accountId = findUserByName(server, name)
     requireNotNull(accountId)
 
-    server.addFriend(me = myId, other = accountId)
+    server.addFriend(other = accountId)
 
-    menu(server, myId)
+    menu(server)
 }
 
-fun startRemoveFriend(server: Server, myId: AccountId?) {
-    checkNotNull(myId) { "You're not logged in" }
-
+fun startRemoveFriend(server: Server) {
     println("Enter the Name for remove")
     val name = readLine()!!
     val accountId = findUserByName(server, name)
     requireNotNull(accountId)
 
-    server.removeFriend(me = myId, other = accountId)
+    server.removeFriend(other = accountId)
 
-    menu(server, myId)
+    menu(server)
 }
 
-fun seeFriendList(server: Server, myId: AccountId?) {
-    checkNotNull(myId) { "You're not logged in" }
-
-    val friendList = server.getFriendList(myId)
+fun seeFriendList(server: Server) {
+    val friendList = server.getFriendList()
     if (friendList.isEmpty()) {
         println("your Friends List is Empty")
     } else {
         println(friendList)
     }
 
-    menu(server, myId)
+    menu(server)
 }
 
-fun seeAllUsers(server: Server, myId: AccountId?) {
+fun seeAllUsers(server: Server) {
     println(server.allUsers())
 
-    menu(server, myId)
+    menu(server)
 }
 
 fun findUserByName(server: Server, query: String): AccountId? {
