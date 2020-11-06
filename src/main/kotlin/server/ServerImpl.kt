@@ -22,6 +22,8 @@ class ServerImpl : Server {
     }
 
     override fun load() {
+        if (ServerFile.exists().not())
+            return
         val (savedIdsString, savedEmailsString, savedPasswordsString, savedFriendsString) = ServerFile.readLines()
         val savedIds: Set<AccountId> = Json.decodeFromString(savedIdsString)
         val savedEmails: Map<String, User> = Json.decodeFromString(savedEmailsString)
@@ -144,3 +146,5 @@ class ServerImpl : Server {
         val ServerFile = File("server")
     }
 }
+
+fun Server(): Server = ServerImpl()
