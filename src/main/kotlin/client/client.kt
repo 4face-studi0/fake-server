@@ -1,18 +1,22 @@
 package client
 
+import server.Auth
 import server.data.AccountId
 import server.data.Birthday
 import server.Server
+import server.Shopping
+import server.data.Database
+
+val database = Database.load()
 
 fun main() {
-    val server = Server()
-    server.load()
+    val server = Server(database, Auth(), Shopping(database))
 
     menu(server)
 }
 
 fun menu(server: Server) {
-    server.save()
+    database.save()
 
     println("""
         

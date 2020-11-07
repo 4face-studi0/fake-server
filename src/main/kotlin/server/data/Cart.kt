@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Cart(
-    val items: Map<Item, Int>
+    val items: MutableMap<Item, Int>
 ) {
     fun totalPrice(): Int {
         return items.values.sum()

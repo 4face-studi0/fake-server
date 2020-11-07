@@ -7,9 +7,11 @@ import kotlinx.serialization.json.Json
 import server.data.*
 import java.io.File
 
-class ServerImpl : Server {
-
-    private var database = Database()
+class ServerImpl(
+    private val database: Database,
+    override val auth: Auth,
+    override val shopping: Shopping
+) : Server {
 
     private var loggedIn
         get() = database.loggedIn
@@ -20,14 +22,9 @@ class ServerImpl : Server {
     private val credentials get() = database.credentials
     private val friends get() = database.friends
 
-    override fun save() {
-        ServerFile.writeText(Json.encodeToString(database))
-    }
+    override fun save() {}
 
-    override fun load() {
-        if (ServerFile.exists().not()) return
-        database = Json.decodeFromString(ServerFile.readText())
-    }
+    override fun load() {}
 
     override fun register(
         name: String,
@@ -130,9 +127,5 @@ class ServerImpl : Server {
 
     private fun checkUserExists(accountId: AccountId) {
         requireNotNull(getUser(accountId)) { "No user found with the given account Id" }
-    }
-
-    private companion object {
-        val ServerFile = File("server")
     }
 }

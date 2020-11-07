@@ -5,17 +5,22 @@ import server.data.*
 
 interface Server {
 
+    val auth: Auth
+    val shopping: Shopping
+
     /**
      * Save the current state of the server, so it can be loaded the next time we
      * launch the application
      * @see load
      */
+    @Deprecated("Save from Database", ReplaceWith("database.save()"))
     fun save()
 
     /**
      * Load the previous saved state of the server
      * @see save
      */
+    @Deprecated("Load to Database", ReplaceWith("val database = Database.load()"))
     fun load()
 
     /**
@@ -81,4 +86,4 @@ interface Server {
     fun getFriendList(): List<User>
 }
 
-fun Server(): Server = ServerImpl()
+fun Server(database: Database, auth: Auth, shopping: Shopping): Server = ServerImpl(database, auth, shopping)

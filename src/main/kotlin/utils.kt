@@ -1,5 +1,6 @@
 import server.data.*
 
+// Users Collection
 operator fun Collection<User>.get(accountId: AccountId) =
     find { it.accountId == accountId }
 
@@ -20,6 +21,14 @@ infix fun Collection<User>.findBy(name: Name) =
 
 infix fun Collection<User>.findBy(surname: Surname) =
     find { it.surname containsNoCase surname }
+
+// Carts Collection
+operator fun MutableCollection<Pair<AccountId, Cart>>.get(accountId: AccountId): Cart {
+    val foundCart = find { it.first == accountId }?.second
+    val cart = foundCart ?: Cart(items = mutableMapOf())
+    if (foundCart == null) this += accountId to cart
+    return cart
+}
 
 infix fun String.containsNoCase(other: String) =
     contains(other, ignoreCase = true)
