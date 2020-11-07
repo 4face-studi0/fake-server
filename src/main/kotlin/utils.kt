@@ -25,9 +25,22 @@ infix fun Collection<User>.findBy(surname: Surname) =
 // Carts Collection
 operator fun MutableCollection<Pair<AccountId, Cart>>.get(accountId: AccountId): Cart {
     val foundCart = find { it.first == accountId }?.second
-    val cart = foundCart ?: Cart(items = mutableMapOf())
+    val cart = foundCart ?: Cart(items = mutableSetOf())
     if (foundCart == null) this += accountId to cart
     return cart
+}
+
+operator fun MutableCollection<Pair<Item, Int>>.get(item: Item): Int? =
+    find { it.first == item }?.second
+
+operator fun MutableCollection<Pair<Item, Int>>.set(item: Item, count: Int) {
+    minusAssign(item)
+    add(item to count)
+}
+
+operator fun MutableCollection<Pair<Item, Int>>.minusAssign(item: Item) {
+    val found = find { it.first == item }
+    remove(found)
 }
 
 infix fun String.containsNoCase(other: String) =

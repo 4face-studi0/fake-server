@@ -27,7 +27,7 @@ internal class ShoppingImplTest {
             addToCart(TestItem1, 1)
 
             assert that getCart() equals Cart(
-                items = mutableMapOf(
+                items = mutableSetOf(
                     TestItem1 to 2
                 )
             )
@@ -41,7 +41,7 @@ internal class ShoppingImplTest {
             removeItemFromCart(TestItem1, 3)
 
             assert that getCart() equals Cart(
-                items = mutableMapOf()
+                items = mutableSetOf()
             )
         }
     }
@@ -53,7 +53,7 @@ internal class ShoppingImplTest {
             removeItemFromCart(TestItem1, 1)
 
             assert that getCart() equals Cart(
-                items = mutableMapOf(
+                items = mutableSetOf(
                     TestItem1 to 2
                 )
             )
@@ -67,7 +67,7 @@ internal class ShoppingImplTest {
             addToCart(TestItem2, 1)
 
             assert that getCart() equals Cart(
-                items = mutableMapOf(
+                items = mutableSetOf(
                     TestItem1 to 2,
                     TestItem2 to 1
                 )
@@ -83,7 +83,7 @@ internal class ShoppingImplTest {
             emptyCart()
 
             assert that getCart() equals Cart(
-                items = mutableMapOf()
+                items = mutableSetOf()
             )
         }
     }
