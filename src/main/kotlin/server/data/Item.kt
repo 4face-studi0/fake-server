@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Item (
     val type: Type,
-    val brand: String,
+    val brand: Brand,
     val color: Color,
     val price: Int,
 )
@@ -32,4 +32,11 @@ enum class Color{
     Purple,
     Pink,
     Blue,
+}
+
+@Serializable
+enum class Brand {
+    Zara,
+    HnM,
+    Nike,
 }
