@@ -27,7 +27,7 @@ fun menu(server: Server) {
     val selection = readLine()
     when (selection) {
         "register" -> startRegistration(server)
-        "login" -> starLogin(server)
+        "login" -> startLogin(server)
         "add" -> startAddingFriend(server)
         "remove" -> startRemoveFriend(server)
         "friends" -> seeFriendList(server)
@@ -52,12 +52,12 @@ fun startRegistration(server: Server) {
         .map { it.trim().toInt() } // trim: remove white spaces -> "22" - "03" - "1997"
     val birthday = Birthday(day, month, year)
 
-    val accountId = server.register(name, surname, email, password, birthday)
+    server.register(name, surname, email, password, birthday)
 
     menu(server)
 }
 
-fun starLogin(server: Server) {
+fun startLogin(server: Server) {
     println("Email address")
     val email = readLine()!!
     println("Enter Your Password")
@@ -120,4 +120,6 @@ fun findUserByName(server: Server, query: String): AccountId? {
         findUsers[selection - 1].accountId
     }
 }
+
+
 

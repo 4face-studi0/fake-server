@@ -23,13 +23,19 @@ interface StringHolder {
 data class AccountId(val number: Int)
 
 @Serializable
-data class Email(override val string: String) : StringHolder
+data class Email(override val string: String) : StringHolder {
+    override fun toString() = string
+}
 
 @Serializable
-data class Name(override val string: String) : StringHolder
+data class Name(override val string: String) : StringHolder {
+    override fun toString() = string
+}
 
 @Serializable
-data class Surname(override val string: String) : StringHolder
+data class Surname(override val string: String) : StringHolder {
+    override fun toString() = string
+}
 
 @Serializable
 data class Birthday(
