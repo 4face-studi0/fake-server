@@ -4,6 +4,7 @@ import kotlin.test.Test
 import kotlin.test.*
 import assert4k.*
 import server.*
+import server.data.Birthday
 
 class ServerImplTest {
 

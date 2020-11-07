@@ -1,7 +1,7 @@
 package client
 
-import server.AccountId
-import server.Birthday
+import server.data.AccountId
+import server.data.Birthday
 import server.Server
 
 fun main() {
@@ -109,7 +109,7 @@ fun seeAllUsers(server: Server) {
 }
 
 fun findUserByName(server: Server, query: String): AccountId? {
-    val findUsers = server.allUsers().filter { query in it.name || query in it.surname }
+    val findUsers = server.allUsers().filter { query in it.name.string || query in it.surname.string }
     return if (findUsers.isEmpty()) {
         println("No Users Found")
         null

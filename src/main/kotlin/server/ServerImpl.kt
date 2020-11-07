@@ -1,53 +1,32 @@
 package server
 
+import get
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import server.data.*
 import java.io.File
 
 class ServerImpl : Server {
 
-    private val ids = mutableSetOf<AccountId>()
-    private val emails = mutableMapOf<String, User>()
-    private val passwords = mutableMapOf<String, User>()
-    private val friends = mutableSetOf<Pair<AccountId, AccountId>>()
-    private var loggedId: AccountId? = null
+    private var database = Database()
+
+    private var loggedIn
+        get() = database.loggedIn
+        set(value) {
+            database.loggedIn = value
+        }
+    private val users get() = database.users
+    private val credentials get() = database.credentials
+    private val friends get() = database.friends
 
     override fun save() {
-        ServerFile.writeText("""
-            ${Json.encodeToString(ids)}
-            ${Json.encodeToString(emails)}
-            ${Json.encodeToString(passwords)}
-            ${Json.encodeToString(friends)}
-            ${Json.encodeToString(loggedId)}
-        """.trimIndent())
+        ServerFile.writeText(Json.encodeToString(database))
     }
 
     override fun load() {
-        if (ServerFile.exists().not())
-            return
-        val (
-            savedIdsString,
-            savedEmailsString,
-            savedPasswordsString,
-            savedFriendsString,
-            savedLoggedInString
-        ) = ServerFile.readLines()
-        val savedIds: Set<AccountId> = Json.decodeFromString(savedIdsString)
-        val savedEmails: Map<String, User> = Json.decodeFromString(savedEmailsString)
-        val savedPasswords: Map<String, User> = Json.decodeFromString(savedPasswordsString)
-        val savedFriends: Set<Pair<AccountId, AccountId>> = Json.decodeFromString(savedFriendsString)
-        val savedLoggedIn: AccountId? = Json.decodeFromString(savedLoggedInString)
-
-        ids.clear()
-        ids += savedIds
-        emails.clear()
-        emails += savedEmails
-        passwords.clear()
-        passwords += savedPasswords
-        friends.clear()
-        friends += savedFriends
-        loggedId = savedLoggedIn
+        if (ServerFile.exists().not()) return
+        database = Json.decodeFromString(ServerFile.readText())
     }
 
     override fun register(
@@ -64,79 +43,58 @@ class ServerImpl : Server {
         checkEmail(email)
         checkPassword(password)
         checkBirthday(birthday)
-        check(emails[email] == null) { "There is already an user registered with this email" }
+        check(users[Email(email)] == null) { "There is already an user registered with this email" }
 
         // Create a new user
-        val lastId = ids.takeIf { it.isNotEmpty() }?.maxOf { it.number } ?: -1
+        val lastId = users.takeIf { it.isNotEmpty() }?.maxOf { it.accountId.number } ?: -1
         val accountId = AccountId(lastId + 1)
         val user = User(
             accountId = accountId,
-            name = name,
-            surname = surname,
+            email = Email(email),
+            name = Name(name),
+            surname = Surname(surname),
             birthday = birthday
         )
 
         // User info
-        ids += accountId
-        emails[email] = user
-        passwords[password] = user
+        users += user
+        credentials += Email(email) to password
 
-        loggedId = accountId
+        loggedIn = accountId
         return accountId
     }
 
     override fun login(email: String, password: String): AccountId {
         checkPasswordMatchesEmail(email, password)
-        val user = checkNotNull(emails[email]) { "No user found for given email address" }
-        loggedId = user.accountId
+        val user = checkNotNull(users[Email(email)]) { "No user found for given email address" }
+        loggedIn = user.accountId
         return user.accountId
     }
 
     override fun addFriend(other: AccountId) {
-        val me = requireNotNull(loggedId) { "You're not logged in" }
-        checkUserExists(other)
-        if (other to me !in friends)
-            friends += me to other
-    }
-
-    override fun addFriend(me: AccountId, other: AccountId) {
-        checkUserExists(me)
+        val me = requireNotNull(loggedIn) { "You're not logged in" }
         checkUserExists(other)
         if (other to me !in friends)
             friends += me to other
     }
 
     override fun removeFriend(other: AccountId) {
-        val me = requireNotNull(loggedId) { "You're not logged in" }
+        val me = requireNotNull(loggedIn) { "You're not logged in" }
         checkUserExists(other)
         friends -= me to other
         friends -= other to me    }
 
-    override fun removeFriend(me: AccountId, other: AccountId) {
-        checkUserExists(me)
-        checkUserExists(other)
-        friends -= me to other
-        friends -= other to me
-    }
-
     override fun getUser(accountId: AccountId): User? =
-        emails.values.find { it.accountId == accountId }
+        users[accountId]
 
     override fun allUsers(): Set<User> =
-        emails.values.toSet()
+        users
 
     override fun getFriendList(): List<User> {
-        val me = requireNotNull(loggedId) { "You're not logged in" }
+        val me = requireNotNull(loggedIn) { "You're not logged in" }
         val allIdPairs = friends.filter { it.first == me || it.second == me }
         val allIdsList = allIdPairs.flatMap { listOf(it.first, it.second) }.toSet()
         return (allIdsList - me).mapNotNull(::getUser)
-    }
-
-    override fun getFriendList(accountId: AccountId): List<User> {
-        checkUserExists(accountId)
-        val allIdPairs = friends.filter { it.first == accountId || it.second == accountId }
-        val allIdsList = allIdPairs.flatMap { listOf(it.first, it.second) }.toSet()
-        return (allIdsList - accountId).mapNotNull(::getUser)
     }
 
     private fun checkName(name: String) {
@@ -167,7 +125,7 @@ class ServerImpl : Server {
     }
 
     private fun checkPasswordMatchesEmail(email: String, password: String) {
-        require(emails[email] == passwords[password]) { "Invalid credentials" }
+        require(credentials.find { it.first.string == email }?.second == password) { "Invalid credentials" }
     }
 
     private fun checkUserExists(accountId: AccountId) {
@@ -178,5 +136,3 @@ class ServerImpl : Server {
         val ServerFile = File("server")
     }
 }
-
-fun Server(): Server = ServerImpl()

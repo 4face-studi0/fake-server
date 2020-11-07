@@ -1,6 +1,7 @@
 package server
 
 import kotlinx.serialization.Serializable
+import server.data.*
 
 interface Server {
 
@@ -52,30 +53,12 @@ interface Server {
     fun addFriend(other: AccountId)
 
     /**
-     * Add a Friend to your friends list
-     * @param me your personal [AccountId]
-     * @param other the [AccountId] of the friend you with to add
-     * @throws IllegalArgumentException if there is no User associated with the given [AccountId]
-     */
-    @Deprecated("User with logged in user", ReplaceWith("addFriend(other)"))
-    fun addFriend(me: AccountId, other: AccountId)
-
-    /**
      * Remove a Friend to your friends list
      * @param other the [AccountId] of the friend you with to remove
      * @throws IllegalArgumentException if there is no User associated with the given [AccountId]
      * @throws IllegalStateException if no user is logged in
      */
     fun removeFriend(other: AccountId)
-
-    /**
-     * Remove a Friend to your friends list
-     * @param me your personal [AccountId]
-     * @param other the [AccountId] of the friend you with to remove
-     * @throws IllegalArgumentException if there is no User associated with the given [AccountId]
-     */
-    @Deprecated("User with logged in user", ReplaceWith("removeFriend(other)"))
-    fun removeFriend(me: AccountId, other: AccountId)
 
     /**
      * Get [User] information for the given [AccountId], which it can be
@@ -96,37 +79,6 @@ interface Server {
      * @throws IllegalArgumentException if there is no User associated with the given [AccountId]
      */
     fun getFriendList(): List<User>
-
-    /**
-     * Load the List of friends for the user with the given [AccountId]
-     * @throws IllegalArgumentException if there is no User associated with the given [AccountId]
-     */
-    @Deprecated("User with logged in user", ReplaceWith("getFriendList()"))
-    fun getFriendList(accountId: AccountId): List<User>
 }
 
-@Serializable
-data class AccountId(val number: Int)
-
-@Serializable
-data class User(
-    val accountId: AccountId,
-    val name: String,
-    val surname: String,
-    val birthday: Birthday
-) {
-    override fun toString(): String {
-        return "$name $surname $birthday"
-    }
-}
-
-@Serializable
-data class Birthday(
-    val day: Int,
-    val month: Int,
-    val year: Int
-) {
-    override fun toString(): String {
-        return "$day $month $year"
-    }
-}
+fun Server(): Server = ServerImpl()
